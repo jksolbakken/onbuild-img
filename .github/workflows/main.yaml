@@ -3,7 +3,7 @@ name: build and push img
 on:
   push:
     branches:
-    - main
+      - main
 
 
 permissions: {}
@@ -15,19 +15,24 @@ jobs:
       contents: read
     environment: test
     steps:
-        - name: set version
-          id: set-version
-          run: |
-            echo Faking a Semantic Version
-            echo "version=1.$(date "+%Y%m%d%H%M%S")" >> ${GITHUB_OUTPUT}
-        - name: Set up QEMU
-          uses: docker/setup-qemu-action@v3
-        - name: Build and push
-          uses: docker/build-push-action@v7
-          with:
-            push: false
-            tags: jksolbakken/onbuild:$VERSION
-            platforms: linux/amd64,linux/arm64
-          env:
-            VERSION: ${{ steps.set-version.outputs.version }}
+      - name: set version
+        id: set-version
+        run: |
+          echo Faking a Semantic Version
+          echo "version=1.$(date "+%Y%m%d%H%M%S")" >> ${GITHUB_OUTPUT}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # ratchet:docker/setup-qemu-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # ratchet:docker/login-action@v4
+        with:
+          username: jksolbakken
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # ratchet:docker/build-push-action@v7
+        with:
+          push: false
+          tags: jksolbakken/onbuild:$VERSION
+          platforms: linux/amd64,linux/arm64
+        env:
+          VERSION: ${{ steps.set-version.outputs.version }}
 
