@@ -1,0 +1,33 @@
+name: build and push img
+
+on:
+  push:
+    branches:
+    - main
+
+
+permissions: {}
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    environment: test
+    steps:
+        - name: set version
+          id: set-version
+          run: |
+            echo Faking a Semantic Version
+            echo "version=1.$(date "+%Y%m%d%H%M%S")" >> ${GITHUB_OUTPUT}
+        - name: Set up QEMU
+          uses: docker/setup-qemu-action@v3
+        - name: Build and push
+          uses: docker/build-push-action@v7
+          with:
+            push: false
+            tags: jksolbakken/onbuild:$VERSION
+            platforms: linux/amd64,linux/arm64
+          env:
+            VERSION: ${{ steps.set-version.outputs.version }}
+
